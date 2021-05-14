@@ -1,8 +1,11 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useContext } from "react";
 import "./Auth.css";
+import AuthContext from "../context/auth-context";
 
 function Auth() {
   const [isLogin, setisLogin] = useState(true);
+
+  const contextType = useContext(AuthContext);
 
   const switchModeHandler = () => {
     setisLogin(!isLogin);
@@ -30,9 +33,9 @@ function Auth() {
             tokenExpiration
           }
         }
-      `
+      `,
     };
-    if(!isLogin){
+    if (!isLogin) {
       requestBody = {
         query: `
     mutation {
@@ -44,7 +47,6 @@ function Auth() {
     `,
       };
     }
-  
 
     fetch("http://localhost:3000/graphql", {
       method: "POST",
@@ -60,7 +62,13 @@ function Auth() {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
+        if (resData.data.login.token) {
+          contextType.login(
+            resData.data.login.token,
+            resData.data.login.userId,
+            resData.data.login.tokenExpiration
+          );
+        }
       })
       .catch((err) => {
         console.log(err);
